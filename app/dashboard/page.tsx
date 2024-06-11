@@ -44,14 +44,18 @@ export default function Dashboard() {
 
   const classifyEmails = async () => {
     setIsLoading(true);
-    const response = await axios.post('/api/gpt', {
-      openAIKey,
-      emails,
-    });
-
-    localStorage.setItem('classifiedEmails', JSON.stringify(response.data));
-    setEmails(response.data);
-    setIsLoading(false);
+    try {
+      const response = await axios.post('/api/gpt', {
+        openAIKey,
+        emails,
+      });
+      localStorage.setItem('classifiedEmails', JSON.stringify(response.data));
+      setEmails(response.data);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.log(error);
+    }
   };
 
   const handleEmailClick = (email) => {
@@ -128,13 +132,15 @@ export default function Dashboard() {
             Classify Emails
           </button>
         </div>
-        {isLoading ? (
-          <div className="absolute top-0 left-0 bg-black/50 w-screen h-screen flex items-center justify-center animate-pulse">
-            <p>Loading emails</p>
+        {isLoading && (
+          <div className="absolute top-0 left-0 bg-black/50 w-screen h-screen text-white flex items-center justify-center animate-pulse">
+            <p>Loading ...</p>
           </div>
-        ) : (
-          <div className="space-y-4 py-4 h-[80%] w-full px-4 overflow-scroll no-scrollbar">
-            {emails.map((email, idx) => (
+        )}
+
+        <div className="space-y-4 py-4 h-[80%] w-full px-4 overflow-scroll no-scrollbar">
+          {emails.length > 0 ? (
+            emails.map((email, idx) => (
               <span
                 key={idx}
                 onClick={() => handleEmailClick(email)}
@@ -142,9 +148,11 @@ export default function Dashboard() {
               >
                 <Emailcard item={email} />
               </span>
-            ))}
-          </div>
-        )}
+            ))
+          ) : (
+            <p className="text-center italic text-xl">No Mails Available</p>
+          )}
+        </div>
 
         {selectedEmail && (
           <div

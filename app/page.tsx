@@ -21,8 +21,8 @@ export default function LoginPage() {
 
   const login = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       if (!openAIKey) {
         setIsLoading(false);
         return;
