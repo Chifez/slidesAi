@@ -43,7 +43,6 @@ export async function POST(req) {
     });
 
     if (!response || !response.choices || !response.choices.length) {
-      console.log('response', response);
       throw new Error('Invalid response from OpenAI');
     }
 
@@ -53,8 +52,7 @@ export async function POST(req) {
         .replace('```', '')
         .trim()
     );
-    console.log('response', classifications);
-    // Add the email body to each classified email
+
     const result = classifications.map((classifiedEmail) => {
       const email = emails.find((e) => e.title === classifiedEmail.title);
       return {
