@@ -76,7 +76,6 @@ export default function Dashboard() {
     }
   }, []);
 
-  //   sk-proj-MLJPG0bDpbUA2aiGcT9nT3BlbkFJBpnvoXkhwMiImYBuxNgc
   return (
     <section className="relative flex items-center justify-center w-full h-screen p-8 bg-purple-300">
       <div className="w-[60%] h-full">
