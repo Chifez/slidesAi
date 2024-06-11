@@ -6,24 +6,21 @@ export async function GET(req) {
     req,
     secret: process.env.NEXTAUTH_SECRET,
   });
-
-  console.log('token1', token);
   if (!token) {
-    console.log('token2', token);
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
     });
   }
-  console.log('here1');
+
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: token.accessToken });
-  console.log('here2');
+
   const gmail = google.gmail({ version: 'v1', auth });
   const response = await gmail.users.messages.list({
     userId: 'me',
     maxResults: req.nextUrl.searchParams.get('maxResults') || 10,
   });
-  console.log('here3', response);
+
   const messages = await Promise.all(
     response.data.messages.map(async (message) => {
       const msg = await gmail.users.messages.get({

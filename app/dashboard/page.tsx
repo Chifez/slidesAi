@@ -15,7 +15,7 @@ export default function Dashboard() {
   const [numEmails, setNumEmails] = useState(10);
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState({ image: '', email: '' });
+  const [user, setUser] = useState({ image: '', email: '', name: '' });
 
   const fetchEmails = async (count) => {
     setIsLoading(true);
@@ -24,11 +24,10 @@ export default function Dashboard() {
         params: { maxResults: count },
       });
       localStorage.setItem('emails', JSON.stringify(response.data));
-      console.log('responss', response);
       setEmails(response?.data);
       setIsLoading(false);
     } catch (error) {
-      console.log('error', error);
+      console.log(error);
       setIsLoading(false);
     }
   };
@@ -44,6 +43,7 @@ export default function Dashboard() {
   };
 
   const classifyEmails = async () => {
+    setIsLoading(true);
     const response = await axios.post('/api/gpt', {
       openAIKey,
       emails,
@@ -51,10 +51,10 @@ export default function Dashboard() {
 
     localStorage.setItem('classifiedEmails', JSON.stringify(response.data));
     setEmails(response.data);
+    setIsLoading(false);
   };
 
   const handleEmailClick = (email) => {
-    console.log('email', email);
     setSelectedEmail(email);
   };
 
@@ -66,15 +66,18 @@ export default function Dashboard() {
     if (!session) {
       router.push('/');
     } else {
-      setUser({ image: session?.user?.image, email: session?.user?.email });
-      console.log('session', session?.user?.image, session?.user?.email);
+      setUser({
+        image: session?.user?.image,
+        email: session?.user?.email,
+        name: session?.user?.name,
+      });
       const storedKey = localStorage.getItem('openAIKey');
       if (storedKey) {
         setOpenAIKey(storedKey);
       }
       fetchEmails(numEmails);
     }
-  }, []);
+  }, [session]);
 
   return (
     <section className="relative flex items-center justify-center w-full h-screen p-8 bg-purple-300">
@@ -86,10 +89,14 @@ export default function Dashboard() {
               alt="user avatar"
               className="border border-red-500 rounded-full size-8"
             />
-            <div></div>
-            <p className="font-semibold italic">
-              {user.email ? user.email : 'userexample@gmail.com'}
-            </p>
+            <div>
+              <p className="font-semibold">
+                {user.name ? user.name : 'example user'}
+              </p>
+              <p className="text-sm">
+                {user.email ? user.email : 'userexample@gmail.com'}
+              </p>
+            </div>
           </span>
 
           <button
@@ -99,6 +106,7 @@ export default function Dashboard() {
             Logout
           </button>
         </div>
+
         <div className=" flex items-center justify-between ">
           <div className="flex flex-col">
             <label htmlFor="numEmails">No of Emails:</label>

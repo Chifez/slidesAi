@@ -12,33 +12,59 @@ export async function POST(req) {
 
     const openai = new OpenAI({ apiKey: openAIKey });
 
-    // Create a prompt that includes all emails
-    const prompt = `Classify the following emails into one of the categories: Important, Social, Promotional, Spam. 
-    You are to return an array of objects in this form:
-    [
+    const messages = [
       {
-        "title": "email title",
-        "body": "email body",
-        "class": "category"
-      }
-    ]
+        role: 'system',
+        content:
+          'You are a helpful assistant that classifies emails into categories: Important, Social, Promotional, Spam.',
+      },
+      {
+        role: 'user',
+        content: `Classify the following email titles into one of the categories: Important, Social, Promotional, Spam. 
+        Return an array of objects in this form:
+        [
+          {
+            "title": "email title",
+            "class": "category"
+          }
+        ]
 
-    Emails:
-    ${emails
-      .map((email) => `Title: ${email.title}\nBody: ${email.body}`)
-      .join('\n\n')}
-    
-    Return the classifications in the specified JSON format.`;
+        Emails:
+        ${emails.map((email) => `Title: ${email.title}`).join('\n')}
+        
+        Return the classifications in the specified JSON format.`,
+      },
+    ];
 
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      prompt: prompt,
+      messages: messages,
       max_tokens: 1500,
     });
 
-    const classifications = JSON.parse(response.data.choices[0].text.trim());
+    if (!response || !response.choices || !response.choices.length) {
+      console.log('response', response);
+      throw new Error('Invalid response from OpenAI');
+    }
 
-    return new Response(JSON.stringify(classifications), { status: 200 });
+    const classifications = JSON.parse(
+      response.choices[0].message.content
+        .replace('```json', '')
+        .replace('```', '')
+        .trim()
+    );
+    console.log('response', classifications);
+    // Add the email body to each classified email
+    const result = classifications.map((classifiedEmail) => {
+      const email = emails.find((e) => e.title === classifiedEmail.title);
+      return {
+        title: classifiedEmail.title,
+        body: email.body,
+        classification: classifiedEmail.class,
+      };
+    });
+
+    return new Response(JSON.stringify(result), { status: 200 });
   } catch (error) {
     console.error('Error processing request:', error);
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {

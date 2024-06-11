@@ -15,6 +15,9 @@ const handler = NextAuth({
       },
     }),
   ],
+  pages: {
+    signIn: 'http://localhost:3001',
+  },
   callbacks: {
     async jwt({ token, account, profile }) {
       if (account) {
@@ -22,7 +25,6 @@ const handler = NextAuth({
         if (profile) {
           token.email = profile.email;
           token.picture = profile.picture;
-          console.log('picute', token?.picture, profile?.picture);
         }
       }
       return token;
