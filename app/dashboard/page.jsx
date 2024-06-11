@@ -87,6 +87,7 @@ export default function Dashboard() {
               alt="user avatar"
               className="border border-red-500 rounded-full size-8"
             />
+            <div></div>
             <p className="font-semibold italic">
               {user.email ? user.email : 'userexample@gmail.com'}
             </p>
